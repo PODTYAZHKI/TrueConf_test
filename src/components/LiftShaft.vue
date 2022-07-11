@@ -45,24 +45,28 @@ function getFloorHeight(element) {
 
 function call(i) {
   elevatorMove(i)
-  console.log(i)
+  // console.log(i)
 }
 
-// function elevatorMove(i) {
-//   // document.getElementById("cabin").style.bottom = `${ (i-1) * floor_height.value}px`
-//   // console.log(document.getElementById("cabin").style.bottom)
-//   cabin_y.value = document.getElementById("cabin").style.bottom
-//   cabin_floor.value = i
-
-//   var cabin = document.getElementById('cabin');
-//   var animation = cabin.animate([
-//     // { transform: `translateY(${cabin_y.value})` },
-//     { transform: `translateY(-${(i - 1) * floor_height.value}px)` }
-//   ], 500);
-//   animation.addEventListener('finish', function () {
-//     cabin.style.transform = `translateY(-${(i - 1) * floor_height.value}px)`;
-//   });
-// }
+function elevatorMove(i) {
+  // document.getElementById("cabin").style.bottom = `${ (i-1) * floor_height.value}px`
+  // console.log(document.getElementById("cabin").style.bottom)
+  cabin_y.value = document.getElementById("cabin").style.bottom
+  
+  var time = Math.abs( i - cabin_floor.value) * 1000
+  console.log(i)
+  console.log(cabin_floor.value)
+  console.log(time)
+  var cabin = document.getElementById('cabin');
+  var animation = cabin.animate([
+    // { transform: `translateY(${cabin_y.value})` },
+    { transform: `translateY(-${(i - 1) * floor_height.value}px)` }
+  ], time);
+  animation.addEventListener('finish', function () {
+    cabin.style.transform = `translateY(-${(i - 1) * floor_height.value}px)`;
+  });
+  cabin_floor.value = i
+}
 
 onMounted(() => {
   const element = floor.value[0]
