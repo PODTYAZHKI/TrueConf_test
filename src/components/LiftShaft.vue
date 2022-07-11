@@ -1,49 +1,80 @@
 <template>
   <div class="shaft">
-    <div v-for="i in floors" :key="i" class="floor">
+    <div v-for="i in floors" :key="i" class="floor" ref="floor">
       <div class="floor_shift">
-        {{i}}
+
+        <!-- <div>
+          {{shift_width.value}}
+        </div>
+        <div>
+          {{floor_height.value}}
+        </div> -->
+
+
+      </div>
+      <div class="info">
+        {{ i }}
+        <div class="button-wrapper">
+          <input type="radio" checked='True' class="radio" @click="call(i)" />
+
+        </div>
       </div>
     </div>
+    <Elevator_cabin :width="shift_width" :height="floor_height" class="cabin" />
   </div>
+
 </template>
 
 <script setup>
 
-// import { ref, onMounted } from 'vue'
+import { ref, onMounted } from 'vue'
+import Elevator_cabin from './ElevatorCabin.vue'
 const floors = 5
+const floor = ref()
+const shift_width = ref(null)
+const floor_height = ref(null)
+const cabin_y = ref('0px')
+const cabin_floor = ref(1)
 
-// function draw() {
-  // const canvas = ref(null);
-  // var canvas = document.getElementById("canvas")
-  // console.log(canvas)
-  // canvas.value.beginPath();
-  // for (var y = 10; y < 100; y += 10) {
-  //   canvas.value.moveTo(10, y);
-  //   canvas.value.lineTo(90, y);
-  // }
-  // canvas.value.stroke();
+function getShiftWidth(element) {
+  shift_width.value = element.clientWidth + 1
+}
+function getFloorHeight(element) {
+  floor_height.value = element.clientHeight + 1
+}
 
+function call(i) {
+  elevatorMove(i)
+  console.log(i)
+}
+
+// function elevatorMove(i) {
+//   // document.getElementById("cabin").style.bottom = `${ (i-1) * floor_height.value}px`
+//   // console.log(document.getElementById("cabin").style.bottom)
+//   cabin_y.value = document.getElementById("cabin").style.bottom
+//   cabin_floor.value = i
+
+//   var cabin = document.getElementById('cabin');
+//   var animation = cabin.animate([
+//     // { transform: `translateY(${cabin_y.value})` },
+//     { transform: `translateY(-${(i - 1) * floor_height.value}px)` }
+//   ], 500);
+//   animation.addEventListener('finish', function () {
+//     cabin.style.transform = `translateY(-${(i - 1) * floor_height.value}px)`;
+//   });
 // }
-  // onMounted(draw())
 
-// function draw() {
-//   manager.drawGrid(4, 4, 1, 'black')
-// }
+onMounted(() => {
+  const element = floor.value[0]
+  // console.log(element.clientHeight)
+  getShiftWidth(element)
+  getFloorHeight(element)
 
-// onMounted(() => {
-//   myContext = myCanvas.value.getContext('2d')
-//   manager = new CanvasManager(myContext, size.w, size.h)
-//   draw();
-// });
-// onUpdated(() => {
-//   draw();
-// });
+})
 
 </script>
 
 <style scope lang="scss">
-
 .shaft {
   //margin: 20px;
   width: 100%;
@@ -52,17 +83,51 @@ const floors = 5
   display: flex;
   flex-direction: column-reverse;
   justify-content: space-between;
+  position: relative;
 
 }
+
 .floor {
   //background-color: red;
   height: 100%;
   border: 0.5px solid grey;
+  display: flex;
+
+
   &_shift {
     width: 100px;
     height: 100%;
     //background-color: white;
     border-right: 1px solid grey
   }
+}
+
+.cabin {
+  position: absolute;
+  display: inline-block;
+
+
+}
+
+.info {
+  padding-left: 10px;
+  padding-top: 10px;
+}
+
+.button {
+  &-wrapper {
+    margin-top: 10px;
+    width: 20px;
+    height: 20px;
+    border: 1px solid grey;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+  }
+}
+
+.radio {
+  margin: 0;
 }
 </style>
