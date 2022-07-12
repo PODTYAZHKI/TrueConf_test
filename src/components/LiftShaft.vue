@@ -16,7 +16,7 @@
         <div class="info-floor" v-for="i in floors" :key="i">
           {{ i }}
           <div class="button-wrapper">
-            <input type="radio" checked='True' class="radio" @click="call(i)" />
+            <input ref="radio" type="radio" checked='True' class="radio" @click="check_lift_queue(i)" />
 
           </div>
         </div>
@@ -41,8 +41,10 @@ const shafts = ref()
 const floor_shaft = ref()
 const shaft_width = ref(null)
 const floor_height = ref(null)
-const cabin_y = ref('0px')
+// const cabin_y = ref('0px')
 const cabin_floor = ref(1)
+const radio = ref()
+
 
 function getshaftWidth(element) {
   shaft_width.value = element.clientWidth
@@ -51,35 +53,77 @@ function getFloorHeight(element) {
   floor_height.value = element.clientHeight
 }
 
-function call(i) {
-  elevatorMove(i)
-  // console.log(i)
+const lift_queue = ref([])
+const cabin_status = ref('ready')
+function check_lift_queue(i) {
+  if (lift_queue.value.length === 0 || lift_queue.value.at(-1) != i) {
+    lift_queue.value.push(i)
+    console.log('lift_queue.value', lift_queue.value)
+  }
+  if (cabin_status.value === 'ready') {
+    call()
+  }
+}
+async function call() {
+  cabin_status.value = 'moving'
+  console.log('status', cabin_status.value)
+
+  var promise = new Promise((resolve) => {
+    var floor = lift_queue.value.shift()
+    console.log('floor', floor)
+    var time = Math.abs(floor - cabin_floor.value) * 1000
+    console.log('time', time)
+    elevatorMove(floor, time)
+    setTimeout(resolve, time)
+
+  })
+  await promise.then(() => {
+    cabin_status.value = 'waiting'
+    console.log('status', cabin_status.value)
+    setTimeout(() => {
+      cabin_status.value = 'ready'
+      console.log('status', cabin_status.value)
+      if (lift_queue.value.length != 0) {
+        call()
+
+      }
+    }, 3000)
+  })
+
 }
 
-function elevatorMove(i) {
-  // document.getElementById("cabin").style.bottom = `${ (i-1) * floor_height.value}px`
-  // console.log(document.getElementById("cabin").style.bottom)
-  cabin_y.value = document.getElementById("cabin").style.bottom
+async function elevatorMove(floor, time) {
+  // cabin_status.value = 'moving'
 
-  var time = Math.abs(i - cabin_floor.value) * 1000
-  console.log(i)
-  console.log(cabin_floor.value)
-  console.log(time)
-  var cabin = document.getElementById('cabin');
-  var animation = cabin.animate([
-    // { transform: `translateY(${cabin_y.value})` },
-    { transform: `translateY(-${(i - 1) * floor_height.value}px)` }
-  ], time);
-  animation.addEventListener('finish', function () {
-    cabin.style.transform = `translateY(-${(i - 1) * floor_height.value}px)`;
-  });
-  cabin_floor.value = i
+
+  var promise = new Promise((resolve) => {
+
+    var cabin = document.getElementById('cabin');
+    var animation = cabin.animate([
+      // { transform: `translateY(${cabin_y.value})` },
+      { transform: `translateY(-${(floor - 1) * floor_height.value}px)` }
+    ], time);
+
+    animation.addEventListener('finish', function () {
+      cabin.style.transform = `translateY(-${(floor - 1) * floor_height.value}px)`;
+    });
+    setTimeout(resolve, time)
+  })
+
+  // })
+  await promise.then(() => {
+    // console.log(floor)
+    cabin_floor.value = floor
+  })
+
+
 }
+
 onBeforeMount(() => {
   floors.value = store.getters.getFloorsCount
   shafts.value = store.getters.getShaftsCount
 })
-onMounted(async () => {
+onMounted(() => {
   // floors.value = store.getters.getFloorsCount()
   const element = floor_shaft.value[0]
   // console.log(element.clientHeight)
@@ -187,12 +231,21 @@ onMounted(async () => {
     justify-content: center;
     align-items: center;
     color: white;
+    position: relative;
+    cursor: pointer;
 
     .radio {
       margin: 0;
+      cursor: pointer;
     }
 
     .radio:checked {
+      content: "";
+      position: absolute;
+      -webkit-transition: all 0.2s ease;
+      -moz-transition: all 0.2s ease;
+      -o-transition: all 0.2s ease;
+      transition: all 0.2s ease;
       left: 5px;
       top: 5px;
       width: 10px;
