@@ -1,20 +1,24 @@
 <template>
-  <div ref="cabin" id="cabin" class="cabin" :width="props.width" :height="props.height"> 
-    3
+  <div ref="cabin" id="cabin" class="cabin"> 
+    
   </div>
 
 </template>
 
 <script setup>
-import { defineProps, onMounted } from 'vue'
-const props = defineProps({
-  width: Number,
-  height: Number,
-})
+import {  onMounted } from 'vue'
+import { useStore } from 'vuex'
+const store = useStore()
+
 // const cabin = ref(null)
 onMounted(()=>{
-  document.getElementById("cabin").style.height = `${props.height}px`
-  document.getElementById("cabin").style.width = `${props.width}px`
+  document.getElementById("cabin").style.height = `${store.getters.getCabinHeight}px`
+  document.getElementById("cabin").style.width = `${store.getters.getCabinWidth}px`
+  // console.log(store.getters.getCabinHeight)
+  // console.log(store.getters.getCabinWidth)
+  // console.log(document.getElementById("cabin").style.width)
+  // console.log(document.getElementById("cabin").style.height)
+
 })
 
 </script>
@@ -23,6 +27,6 @@ onMounted(()=>{
   .cabin {
     background-color: red;
     //display: inline-block;
-    border: 1px solid grey;
+    //border: 1px solid grey;
   }
 </style>
