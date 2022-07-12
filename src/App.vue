@@ -22,9 +22,10 @@ export default {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
+    padding: 20px;
   }
   #app {
-    margin: 20px;
+    //padding: 20px;
     height: 100vh;
     //width: 100vw;
   }
