@@ -1,6 +1,6 @@
 <template>
   <!-- <div id="cabin_wrapper" class="cabin_wrapper"> -->
-  <div id="cabin" class="cabin" :class="[props.direction === '' ? '' : 'blink']">
+  <div id="cabin" class="cabin" :class="[props.blink ? 'blink' : '']">
     <div class="cabin_indicator_wrapper">
       <div class="cabin_indicator"  :class="[props.direction === '' ? '' : 'cabin_indicator_move']">
         <div class="direction">
@@ -24,7 +24,8 @@ const props = defineProps({
   width: String,
   height: String,
   floor: Number,
-  direction: String
+  direction: String,
+  blink: Boolean
 });
 
 // const cabin = ref(null)

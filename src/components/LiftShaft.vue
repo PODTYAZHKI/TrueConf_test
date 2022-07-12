@@ -24,7 +24,7 @@
     </div>
 
     <Elevator_cabin class="cabin" :width="shaft_width" :height="floor_height" :floor="toFloor"
-      :direction="cabin_direction" />
+      :direction="cabin_direction" :blink="cabin_blink"/>
     <!-- <Building_setting class="settings" /> -->
   </div>
 
@@ -69,6 +69,7 @@ function check_lift_queue(i) {
 
 }
 const movingFloor = ref()
+const cabin_blink = ref()
 async function call() {
   cabin_status.value = 'moving'
   console.log('status', cabin_status.value)
@@ -85,7 +86,9 @@ async function call() {
   await promise.then(() => {
     cabin_status.value = 'waiting'
     console.log('status', cabin_status.value)
+    cabin_blink.value = true
     setTimeout(() => {
+      cabin_blink.value = false
       cabin_status.value = 'ready'
       console.log('status', cabin_status.value)
       toFloor.value = ''
