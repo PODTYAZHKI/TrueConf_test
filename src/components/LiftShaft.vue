@@ -23,7 +23,8 @@
       </div>
     </div>
 
-    <Elevator_cabin class="cabin" />
+    <Elevator_cabin class="cabin" :width="shaft_width" :height="floor_height" :floor="toFloor"
+      :direction="cabin_direction" />
     <!-- <Building_setting class="settings" /> -->
   </div>
 
@@ -44,8 +45,10 @@ const floor_height = ref(null)
 // const cabin_y = ref('0px')
 const cabin_floor = ref(1)
 const radio = ref()
+const cabin_direction = ref('')
+// const lift_cabin = ref()
 
-
+const toFloor = ref()
 function getshaftWidth(element) {
   shaft_width.value = element.clientWidth
 }
@@ -56,24 +59,26 @@ function getFloorHeight(element) {
 const lift_queue = ref([])
 const cabin_status = ref('ready')
 function check_lift_queue(i) {
-  if (lift_queue.value.length === 0 || lift_queue.value.at(-1) != i) {
+  if ((lift_queue.value.length === 0 || lift_queue.value.at(-1) != i) && (i != cabin_floor.value || movingFloor.value != i)) {
     lift_queue.value.push(i)
     console.log('lift_queue.value', lift_queue.value)
+    if (cabin_status.value === 'ready') {
+      call()
+    }
   }
-  if (cabin_status.value === 'ready') {
-    call()
-  }
+
 }
+const movingFloor = ref()
 async function call() {
   cabin_status.value = 'moving'
   console.log('status', cabin_status.value)
 
   var promise = new Promise((resolve) => {
-    var floor = lift_queue.value.shift()
-    console.log('floor', floor)
-    var time = Math.abs(floor - cabin_floor.value) * 1000
+    movingFloor.value = lift_queue.value.shift()
+    console.log('floor', movingFloor.value)
+    var time = Math.abs(movingFloor.value - cabin_floor.value) * 1000
     console.log('time', time)
-    elevatorMove(floor, time)
+    elevatorMove(movingFloor.value, time)
     setTimeout(resolve, time)
 
   })
@@ -83,6 +88,8 @@ async function call() {
     setTimeout(() => {
       cabin_status.value = 'ready'
       console.log('status', cabin_status.value)
+      toFloor.value = ''
+      cabin_direction.value = ''
       if (lift_queue.value.length != 0) {
         call()
 
@@ -99,6 +106,12 @@ async function elevatorMove(floor, time) {
   var promise = new Promise((resolve) => {
 
     var cabin = document.getElementById('cabin');
+    // lift_cabin.value.setFloor(floor)
+    toFloor.value = floor
+    if ((cabin_floor.value - floor) > 0) {
+      cabin_direction.value = '↓'
+    }
+    else cabin_direction.value = '↑'
     var animation = cabin.animate([
       // { transform: `translateY(${cabin_y.value})` },
       { transform: `translateY(-${(floor - 1) * floor_height.value}px)` }
@@ -129,9 +142,9 @@ onMounted(() => {
   // console.log(element.clientHeight)
   getshaftWidth(element)
   getFloorHeight(element)
-  store.commit('setCabinWidth', shaft_width.value)
+  // store.commit('setCabinWidth', shaft_width.value)
   // await store.dispatch('changeCabinWidth', shaft_width.value)
-  store.commit('setCabinHeight', floor_height.value)
+  // store.commit('setCabinHeight', floor_height.value)
 
 })
 
@@ -139,10 +152,11 @@ onMounted(() => {
 
 <style scope lang="scss">
 .building {
+
   //margin: 20px;
   width: 100%;
   height: 100%;
-  border: 0.5px solid grey;
+  border: 0.5px solid #D8DDDD;
   //display: flex;
   //flex-direction: column-reverse;
   //justify-content: space-between;
@@ -171,7 +185,7 @@ onMounted(() => {
 }
 
 .shaft {
-  border-right: 1px solid grey;
+  border-right: 1px solid #D8DDDD;
   display: flex;
   flex-direction: column-reverse;
   justify-content: space-between;
@@ -180,7 +194,7 @@ onMounted(() => {
 .floor {
   //background-color: red;
   height: 100%;
-  border: 0.5px solid grey;
+  border: 0.5px solid #D8DDDD;
   //display: flex;
 
 
@@ -226,7 +240,7 @@ onMounted(() => {
     margin-top: 10px;
     width: 20px;
     height: 20px;
-    border: 1px solid grey;
+    border: 1px solid #D8DDDD;
     display: flex;
     justify-content: center;
     align-items: center;
