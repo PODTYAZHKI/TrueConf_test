@@ -1,12 +1,13 @@
 <template>
 
-  <div id="cabin" class="cabin" :class="[props.blink ? 'blink' : '']">
+  <div ref="elevator_cabin" class="cabin" :class="[props.blink ? 'blink' : '']">
+
     <div class="cabin_indicator_wrapper">
-      <div class="cabin_indicator" :class="[props.direction === '' ? '' : 'cabin_indicator_move']">
+      <div class="cabin_indicator" :class="[props.direction === '' || props.direction === undefined ? '' : 'cabin_indicator_move']">
         <div class="direction">
           {{ props.direction }}
         </div>
-        {{ props.floor }}
+        {{ props.direction != '' ? props.floor : ''}}
       </div>
     </div>
   </div>
@@ -14,21 +15,22 @@
 </template>
 
 <script setup>
-import { onMounted, defineProps } from 'vue'
+import { onMounted, defineProps, ref } from 'vue'
 
 const props = defineProps({
   width: Number,
   height: Number,
-  floor: String,
+  floor: Number,
   direction: String,
-  blink: Boolean
-});
+  blink: Boolean,
 
+});
+const elevator_cabin = ref()
 onMounted(() => {
   setTimeout(() => {
-    document.getElementById("cabin").style.height = `${props.height}px`
-    document.getElementById("cabin").style.width = `${props.width}px`
-  }, 300)
+    elevator_cabin.value.style.height = `${props.height}px`
+    elevator_cabin.value.style.width = `${props.width}px`
+  }, 500)
 })
 
 </script>
