@@ -319,9 +319,7 @@ onMounted(() => {
 
 }
 
-.cabin:last-of-type {
-  background-color: red;
-}
+
 
 .settings {
   position: absolute;
