@@ -2,7 +2,7 @@ import { createStore } from "vuex";
 
 export default createStore({
   state: {
-    shafts_count: 2,
+    shafts_count: 1,
     floors_count: 5,
   },
   getters: {
