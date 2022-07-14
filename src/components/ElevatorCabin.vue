@@ -1,13 +1,13 @@
 <template>
 
   <div ref="elevator_cabin" class="cabin" :class="[props.blink ? 'blink' : '']">
-
     <div class="cabin_indicator_wrapper">
-      <div class="cabin_indicator" :class="[props.direction === '' || props.direction === undefined ? '' : 'cabin_indicator_move']">
+      <div class="cabin_indicator"
+        :class="[props.direction === '' || props.direction === undefined ? '' : 'cabin_indicator_move']">
         <div class="direction">
           {{ props.direction }}
         </div>
-        {{ props.direction != '' ? props.floor : ''}}
+        {{ props.direction != '' ? props.floor : '' }}
       </div>
     </div>
   </div>
@@ -38,7 +38,6 @@ onMounted(() => {
 <style scope lang="scss">
 .cabin {
   background-color: #03FFFF;
-
 
   &_wrapper {
     background-color: white;
