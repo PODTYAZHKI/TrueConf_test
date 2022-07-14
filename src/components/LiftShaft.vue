@@ -51,11 +51,12 @@ const radio_wrapper = ref()
 const cabin_direction = ref([])
 
 
-function getshaftWidth(element) {
+function getShaftWidth(element) {
   shaft_width.value = element.clientWidth
 }
 function getFloorHeight(element) {
   floor_height.value = element.clientHeight
+  console.log('height', element.clientHeight)
 }
 
 const lift_queue = ref([])
@@ -74,10 +75,12 @@ function chooseLift(floor) {
         id: elevator
       })
   }
-  times = times.filter(elevator => elevator.status != 'moving')
+  if (shafts.value > 1) {
+    times = times.filter(elevator => elevator.status != 'moving')
+  }
   console.log(times)
   // var minTime = Math.min(...times)
-  var minTime = times.reduce((i, ac) => {
+  var minTime = times.reduceRight((i, ac) => {
     return (i.time < ac.time ? i : ac);
   });
   console.log(minTime)
@@ -90,15 +93,15 @@ function chooseLift(floor) {
 
 }
 function check_lift_queue(i) {
-  if ((lift_queue.value.length === 0 || lift_queue.value.at(-1) != i) && (!cabins_floor.value.includes(i) || !moving_floor.value.includes(i))) {
-
-    lift_queue.value.push(chooseLift(i))
+  if ((lift_queue.value.length === 0 || lift_queue.value.at(-1) != i) && (!cabins_floor.value.includes(i) && !moving_floor.value.includes(i))) {
+    var e = chooseLift(i)
+    lift_queue.value.push(e)
     console.log(lift_queue.value)
     localStorage.setItem('queue', JSON.stringify(lift_queue.value))
     queueColor(i)
 
-    if (cabins_status.value[0] === 'ready') {
-    call()
+    if (cabins_status.value[e.elevator - 1] === 'ready') {
+      call()
     }
   }
 
@@ -113,7 +116,9 @@ async function call() {
   var promise = new Promise((resolve) => {
     var i = lift_queue.value.shift()
     var elevator = i.elevator
+    console.log('queue', i)
     moving_floor.value[elevator - 1] = i.floor
+    console.log('cabins_floor', cabins_floor.value[elevator - 1])
     cabins_status.value[elevator - 1] = 'moving'
     var time = Math.abs(moving_floor.value[elevator - 1] - cabins_floor.value[elevator - 1]) * 1000
     console.log('time', time)
@@ -137,7 +142,6 @@ async function call() {
       radio.value[moving_floor.value[elevator - 1] - 1].classList.remove("call")
       if (lift_queue.value.length != 0) {
         call()
-
       }
       else {
         localStorage.removeItem('queue')
@@ -148,12 +152,15 @@ async function call() {
 }
 
 async function elevatorMove(elevator, floor, time) {
+  console.log('elevator',cabins_floor.value[elevator - 1])
+  console.log('floor',floor)
   // cabins_status.value = 'moving'
 
 
   var promise = new Promise((resolve) => {
 
     var cabin = document.getElementById(`cabin${elevator}`);
+    console.log(time)
     if ((cabins_floor.value[elevator - 1] - floor) > 0) {
       cabin_direction.value[elevator - 1] = '↓'
     }
@@ -173,6 +180,7 @@ async function elevatorMove(elevator, floor, time) {
   await promise.then(() => {
     // console.log(floor)
     cabins_floor.value[elevator - 1] = floor
+    console.log('promis', floor)
     localStorage.setItem('cabins_floor', cabins_floor.value)
   })
 }
@@ -185,12 +193,13 @@ onMounted(() => {
   // floors.value = store.getters.getFloorsCount()
   const element = floor_shaft.value[0]
   // console.log(element.clientHeight)
-  getshaftWidth(element)
+  getShaftWidth(element)
   getFloorHeight(element)
-  for (let i = 0; i < shafts.value; i++) {
+  document.getElementById(`cabin${1}`).style.left = `${shaft_width.value * i}px`
+  for (let i = 1; i < shafts.value; i++) {
     // shaft.value[i].style.position = 'relative'
     // document.getElementById(`shaft${i+1}`).style.position = 'relative'
-    document.getElementById(`cabin${i + 1}`).style.left = `${shaft_width.value * i}px`
+    document.getElementById(`cabin${i + 1}`).style.left = `${shaft_width.value * i + 1}px`
     // cabin.value[i].style.position = 'absolute'
 
     // console.log(i)
@@ -200,62 +209,45 @@ onMounted(() => {
   cabins_status.value = []
   cabins_blink.value = []
   cabin_direction.value = []
+  var i = localStorage.getItem('cabins_floor')
+  console.log(i)
+  // var i = localStorage.getItem('cabins_floor').split(',').map(Number)
+  if (i != null) {
+    i = i.split(',').map(Number)
+    if (i.length === shafts.value) {
+      cabins_floor.value = i
+      // moving_floor.value = i
+      for (let i = 0; i < cabins_floor.value.length; i++) {
+        var cabin = document.getElementById(`cabin${i + 1}`);
+        console.log(cabin)
+        cabin.style.transform = `translateY(-${(cabins_floor.value[i] - 1) * floor_height.value}px)`;
+
+      }
+    } else {
+      localStorage.removeItem('cabins_floor')
+    }
+  } else {
+    for (let i = 0; i < shafts.value; i++) {
+      cabins_floor.value.push(1)
+      moving_floor.value.push(1)
+    }
+  }
   for (let i = 0; i < shafts.value; i++) {
-    cabins_floor.value.push(1)
-    moving_floor.value.push(1)
     cabins_status.value.push('ready')
     cabins_blink.value.push(false)
     cabin_direction.value.push('')
-    // console.log(i)
   }
-  if (localStorage.getItem('cabins_floor') != null) {
-    cabins_floor.value = localStorage.getItem('cabins_floor').split(',').map(Number)
-    moving_floor.value = localStorage.getItem('cabins_floor').split(',').map(Number)
-    
-
-    // cabins_floor.value.forEach((el) => {
-    //   el = Number(el)
-    //   console.log(el)
-    // })
-    // cabins_floor.value[0] = Number(cabins_floor.value[0])
-    console.log(cabins_floor.value)
-    for (let i = 0; i < cabins_floor.value.length; i++) {
-      var cabin = document.getElementById(`cabin${i + 1}`);
-      console.log(cabin)
-      cabin.style.transform = `translateY(-${(cabins_floor.value[i] - 1) * floor_height.value}px)`;
-      // console.log(cabin)
-    }
-
-
-
-  }
-  // else {
-  //   cabins_floor.value = []
-  //   moving_floor.value = []
-  //   cabins_status.value = []
-  //   cabins_blink.value = []
-  //   cabin_direction.value = []
-  //   for (let i = 0; i < shafts.value; i++) {
-  //     cabins_floor.value.push(1)
-  //     moving_floor.value.push(1)
-  //     cabins_status.value.push('ready')
-  //     cabins_blink.value.push(false)
-  //     cabin_direction.value.push('')
-  //     // console.log(i)
-  //   }
-  //   // cabins_status.value[0] = 'moving'
-  //   console.log(cabins_status.value)
-  //   // cabins_floor.value = 1
-  // }
   if (localStorage.getItem('queue') != null) {
-
     lift_queue.value = JSON.parse(localStorage.getItem('queue'))
-
-    // if (lift_queue.value[0] === cabins_floor.value) {
-    // lift_queue.value.shift()
-    // }
-    console.log(lift_queue.value)
-    setTimeout(call, 1000)
+    // console.log(JSON.parse(localStorage.getItem('queue')))
+    for (let i of lift_queue.value) {
+      if (i.floor === cabins_floor.value[i.elevator - 1]) {
+        lift_queue.value.shift()
+      }
+    }
+    setTimeout(()=>{
+      if (lift_queue.value.length != 0) call()
+      }, 1000)
   }
 })
 
@@ -312,6 +304,8 @@ onMounted(() => {
   &_shaft {
     width: 100px;
     height: 100%;
+    //border-top: 0.5px solid #D8DDDD;
+    //border-top: 0.5px solid #D8DDDD;
     //background-color: white;
 
   }
@@ -375,13 +369,9 @@ onMounted(() => {
 }
 
 input[type="radio"] {
-  /* Add if not using autoprefixer */
   -webkit-appearance: none;
-  /* Remove most all native input styles */
   appearance: none;
-  /* For iOS < 15 */
   background-color: white;
-  /* Not removed via appearance */
   margin: 0;
 
   font: inherit;
